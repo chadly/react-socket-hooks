@@ -1,0 +1,20 @@
+{
+	"plugins": [
+		"@babel/proposal-export-default-from",
+		"@babel/proposal-class-properties",
+		"@babel/proposal-optional-catch-binding",
+		["@babel/proposal-object-rest-spread", { "useBuiltIns": true }]
+	],
+	"env": {
+		"es": {
+			"presets": ["@babel/react"]
+		},
+		"node": {
+			"presets": [["@babel/env", {
+				"targets": {
+				  "node": "current"
+				}
+			}], "@babel/react"]
+		}
+	}
+}
