@@ -1,12 +1,22 @@
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 
-const useOpenHandler = ({ messageQueue, send }) =>
-	useCallback(() => {
+const useOpenHandler = ({ messageQueue, send, socket }) => {
+	const openHandler = useCallback(() => {
 		while (messageQueue.current.length > 0) {
 			// send any queued messages on the socket now that it is open
 			var msg = messageQueue.current.shift();
 			send(msg);
 		}
 	}, [messageQueue, send]);
+
+	useEffect(() => {
+		const socketNow = socket.current;
+		if (socketNow) {
+			socketNow.addEventListener("open", openHandler);
+		}
+
+		return () => socketNow && socketNow.close();
+	}, [openHandler, socket]);
+};
 
 export default useOpenHandler;

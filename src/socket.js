@@ -9,10 +9,10 @@ const useSocket = (url, { onMessage } = {}) => {
 	const messageQueue = useRef([]);
 	const socket = useRef(null);
 
-	const send = useSendHandler({ socket, messageQueue });
-	const openHandler = useOpenHandler({ messageQueue, send });
+	useSocketInstance({ socket, url });
 
-	useSocketInstance({ socket, openHandler, send, url });
+	const send = useSendHandler({ socket, messageQueue });
+	useOpenHandler({ messageQueue, send, socket });
 	useMessageHandler({ socket, onMessage });
 
 	return { send };
