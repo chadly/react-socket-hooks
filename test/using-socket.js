@@ -117,4 +117,9 @@ describe("When rendering a component with useSocket", function() {
 		expect(this.sockets[1].url).to.equal("wss://testing.example.com/");
 		expect(this.sockets[1].readyState).to.equal(global.WebSocket.CONNECTING);
 	});
+
+	it("should not open any socket with no URL", function() {
+		renderHook(() => useSocket());
+		expect(this.sockets).to.be.empty;
+	});
 });
