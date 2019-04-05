@@ -10,6 +10,13 @@ describe("When rendering a component with useSocket", function() {
 	behavesLikeBrowser();
 	mockWebSocket();
 
+	beforeEach(function() {
+		this.ensureSingleSocket = () => {
+			expect(this.sockets).to.have.lengthOf(1);
+			return this.sockets[0];
+		};
+	});
+
 	it("should expose a send callback which sends on the socket", function() {
 		const { result } = renderHook(() =>
 			useSocket("http://example.com/api/bananas/", {
@@ -17,15 +24,16 @@ describe("When rendering a component with useSocket", function() {
 			})
 		);
 
-		const socket = this.sockets.pop();
-
 		expect(result.current.send).to.be.a("function");
+
 		act(() => {
-			socket.triggerOpen();
+			this.ensureSingleSocket().triggerOpen();
 			result.current.send({ bart: "beauvoir" });
 		});
 
-		expect(socket.sentMessages[0]).to.equal('{"bart":"beauvoir"}');
+		expect(this.ensureSingleSocket().sentMessages[0]).to.equal(
+			'{"bart":"beauvoir"}'
+		);
 	});
 
 	it("should call `onMessage` when message received on socket", function() {
@@ -39,7 +47,7 @@ describe("When rendering a component with useSocket", function() {
 		);
 
 		act(() => {
-			this.sockets.pop().triggerMessage({ foo: "bar" });
+			this.ensureSingleSocket().triggerMessage({ foo: "bar" });
 		});
 
 		expect(socketSink).to.deep.equal({ foo: "bar" });
@@ -53,9 +61,7 @@ describe("When rendering a component with useSocket", function() {
 			result.current.send({ homer: "simpson" });
 		});
 
-		const socket = this.sockets.pop();
-
-		expect(socket.sentMessages).to.be.empty;
+		expect(this.ensureSingleSocket().sentMessages).to.be.empty;
 	});
 
 	it("should send queued messages once socket opens", function() {
@@ -63,15 +69,14 @@ describe("When rendering a component with useSocket", function() {
 			useSocket("http://example.com/api/bananas/")
 		);
 
-		const socket = this.sockets.pop();
-
 		act(() => {
 			result.current.send({ homer: "simpson" });
 			result.current.send({ bart: "beauvoir" });
 
-			socket.triggerOpen();
+			this.ensureSingleSocket().triggerOpen();
 		});
 
+		const socket = this.ensureSingleSocket();
 		expect(socket.sentMessages).to.have.lengthOf(2);
 		expect(socket.sentMessages[0]).to.equal('{"homer":"simpson"}');
 		expect(socket.sentMessages[1]).to.equal('{"bart":"beauvoir"}');
