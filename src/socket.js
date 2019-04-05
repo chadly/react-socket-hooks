@@ -1,50 +1,20 @@
-import { useCallback, useEffect, useRef } from "react";
-
-const useSocketHandler = onMessage =>
-	useCallback(
-		evt => {
-			if (evt && evt.data) {
-				onMessage(JSON.parse(evt.data));
-			}
-		},
-		[onMessage]
-	);
+import { useRef } from "react";
+import useMessageHandler from "./message-handler";
+import useOpenHandler from "./open-handler";
+import useSendHandler from "./send-handler";
+import usePopulateSocketInstance from "./populate-socket-instance";
+import useAttachMessageHandlers from "./attach-message-handlers";
 
 const useSocket = (url, { onMessage } = {}) => {
 	const messageQueue = useRef([]);
 	const socket = useRef(null);
-	const messageHandler = useSocketHandler(onMessage);
 
-	const send = useCallback(message => {
-		if (socket.current.readyState === WebSocket.OPEN) {
-			socket.current.send(JSON.stringify(message));
-		} else {
-			messageQueue.current.push(message);
-		}
-	}, []);
+	const messageHandler = useMessageHandler(onMessage);
+	const send = useSendHandler({ socket, messageQueue });
+	const openHandler = useOpenHandler({ messageQueue, send });
 
-	useEffect(() => {
-		socket.current = new WebSocket(url);
-		socket.current.addEventListener("open", () => {
-			while (messageQueue.current.length > 0) {
-				// send any queued messages on the socket now that it is open
-				var msg = messageQueue.current.shift();
-				send(msg);
-			}
-		});
-		return () => socket.current && socket.current.close();
-	}, [send, url]);
-
-	useEffect(() => {
-		if (onMessage && socket.current) {
-			socket.current.addEventListener("message", messageHandler);
-		}
-		return () => {
-			if (onMessage && socket) {
-				socket.current.removeEventListener("message", messageHandler);
-			}
-		};
-	}, [messageHandler, onMessage]);
+	usePopulateSocketInstance({ socket, openHandler, send, url });
+	useAttachMessageHandlers({ socket, onMessage, messageHandler });
 
 	return { send };
 };
