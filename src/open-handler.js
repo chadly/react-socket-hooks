@@ -10,12 +10,11 @@ const useOpenHandler = ({ messageQueue, send, socket }) => {
 	}, [messageQueue, send]);
 
 	useEffect(() => {
-		const socketNow = socket.current;
-		if (socketNow) {
-			socketNow.addEventListener("open", openHandler);
+		if (socket) {
+			socket.addEventListener("open", openHandler);
 		}
 
-		return () => socketNow && socketNow.close();
+		return () => socket && socket.close();
 	}, [openHandler, socket]);
 };
 

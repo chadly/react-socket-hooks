@@ -11,15 +11,13 @@ const useMessageHandler = ({ socket, onMessage }) => {
 	);
 
 	useEffect(() => {
-		let socketNow = socket && socket.current;
-
-		if (socketNow) {
-			socketNow.addEventListener("message", messageHandler);
+		if (socket) {
+			socket.addEventListener("message", messageHandler);
 		}
 
 		return () => {
-			if (socketNow) {
-				socketNow.removeEventListener("message", messageHandler);
+			if (socket) {
+				socket.removeEventListener("message", messageHandler);
 			}
 		};
 	}, [messageHandler, socket]);

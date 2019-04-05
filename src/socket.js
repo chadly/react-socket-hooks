@@ -7,9 +7,8 @@ import useMessageHandler from "./message-handler";
 
 const useSocket = (url, { onMessage } = {}) => {
 	const messageQueue = useRef([]);
-	const socket = useRef(null);
 
-	useSocketInstance({ socket, url });
+	const socket = useSocketInstance(url);
 
 	const send = useSendHandler({ socket, messageQueue });
 	useOpenHandler({ messageQueue, send, socket });

@@ -118,6 +118,30 @@ describe("When rendering a component with useSocket", function() {
 		expect(this.sockets[1].readyState).to.equal(global.WebSocket.CONNECTING);
 	});
 
+	it("should send queued messages after changing socket URL", function() {
+		const { rerender, result } = renderHook(({ url }) => useSocket(url), {
+			initialProps: { url: "wss://api.example.com/" }
+		});
+
+		act(() => {
+			rerender({ url: "wss://testing.example.com/" });
+		});
+
+		let socket;
+
+		act(() => {
+			result.current.send({ homer: "simpson" });
+			result.current.send({ bart: "beauvoir" });
+
+			socket = this.sockets[1];
+			socket.triggerOpen();
+		});
+
+		expect(socket.sentMessages).to.have.lengthOf(2);
+		expect(socket.sentMessages[0]).to.equal('{"homer":"simpson"}');
+		expect(socket.sentMessages[1]).to.equal('{"bart":"beauvoir"}');
+	});
+
 	it("should not open any socket with no URL", function() {
 		renderHook(() => useSocket());
 		expect(this.sockets).to.be.empty;
