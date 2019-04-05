@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-const usePopulateSocketInstance = ({ socket, openHandler, send, url }) =>
+const useSocketInstance = ({ socket, openHandler, send, url }) =>
 	useEffect(() => {
 		if (url) {
 			socket.current = new WebSocket(url);
@@ -10,4 +10,4 @@ const usePopulateSocketInstance = ({ socket, openHandler, send, url }) =>
 		return () => socket.current && socket.current.close();
 	}, [openHandler, send, socket, url]);
 
-export default usePopulateSocketInstance;
+export default useSocketInstance;
