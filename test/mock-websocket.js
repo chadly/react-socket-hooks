@@ -5,8 +5,13 @@ export default function() {
 		let sockets = (this.sockets = []);
 
 		global.WebSocket = class WebSocket extends Emitter {
-			constructor(url, opts) {
+			constructor(url) {
 				super();
+
+				this.url = url;
+				this.readyState = WebSocket.CONNECTING;
+				this.sentMessages = [];
+
 				sockets.push(this);
 			}
 
@@ -14,9 +19,6 @@ export default function() {
 			static OPEN = 1;
 			static CLOSING = 2;
 			static CLOSED = 3;
-
-			readyState = this.CONNECTING;
-			sentMessages = [];
 
 			close() {
 				this.readyState = WebSocket.CLOSED;
@@ -29,6 +31,7 @@ export default function() {
 			addEventListener(...args) {
 				this.addListener(...args);
 			}
+
 			removeEventListener(...args) {
 				this.removeListener(...args);
 			}

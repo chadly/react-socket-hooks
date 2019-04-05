@@ -19,7 +19,7 @@ describe("When rendering a component with useSocket", function() {
 
 	it("should expose a send callback which sends on the socket", function() {
 		const { result } = renderHook(() =>
-			useSocket("http://example.com/api/bananas/", {
+			useSocket("wss://api.example.com/", {
 				onMessage: Function.prototype
 			})
 		);
@@ -39,7 +39,7 @@ describe("When rendering a component with useSocket", function() {
 	it("should call `onMessage` when message received on socket", function() {
 		let socketSink;
 		renderHook(() =>
-			useSocket("http://example.com/api/bananas/", {
+			useSocket("wss://api.example.com/", {
 				onMessage: message => {
 					socketSink = message;
 				}
@@ -54,9 +54,8 @@ describe("When rendering a component with useSocket", function() {
 	});
 
 	it("should queue messages when socket is not yet open", function() {
-		const { result } = renderHook(() =>
-			useSocket("http://example.com/api/bananas/")
-		);
+		const { result } = renderHook(() => useSocket("wss://api.example.com/"));
+
 		act(() => {
 			result.current.send({ homer: "simpson" });
 		});
@@ -65,9 +64,7 @@ describe("When rendering a component with useSocket", function() {
 	});
 
 	it("should send queued messages once socket opens", function() {
-		const { result } = renderHook(() =>
-			useSocket("http://example.com/api/bananas/")
-		);
+		const { result } = renderHook(() => useSocket("wss://api.example.com/"));
 
 		act(() => {
 			result.current.send({ homer: "simpson" });
@@ -80,5 +77,26 @@ describe("When rendering a component with useSocket", function() {
 		expect(socket.sentMessages).to.have.lengthOf(2);
 		expect(socket.sentMessages[0]).to.equal('{"homer":"simpson"}');
 		expect(socket.sentMessages[1]).to.equal('{"bart":"beauvoir"}');
+	});
+
+	it("should close current socket and open new one when URL changes", function() {
+		const { rerender } = renderHook(({ url }) => useSocket(url), {
+			initialProps: { url: "wss://api.example.com/" }
+		});
+
+		expect(this.sockets).to.have.lengthOf(1);
+		expect(this.sockets[0].url).to.equal("wss://api.example.com/");
+
+		act(() => {
+			rerender({ url: "wss://testing.example.com/" });
+		});
+
+		expect(this.sockets).to.have.lengthOf(2);
+
+		expect(this.sockets[0].url).to.equal("wss://api.example.com/");
+		expect(this.sockets[0].readyState).to.equal(global.WebSocket.CLOSED);
+
+		expect(this.sockets[1].url).to.equal("wss://testing.example.com/");
+		expect(this.sockets[1].readyState).to.equal(global.WebSocket.CONNECTING);
 	});
 });
