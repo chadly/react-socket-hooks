@@ -40,6 +40,12 @@ export default function() {
 				this.readyState = WebSocket.OPEN;
 				this.emit("open");
 			}
+
+			triggerClose() {
+				this.readyState = WebSocket.CLOSED;
+				this.emit("closed");
+			}
+
 			triggerMessage(message) {
 				this.emit("message", { data: JSON.stringify(message) });
 			}

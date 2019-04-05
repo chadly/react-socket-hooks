@@ -79,6 +79,24 @@ describe("When rendering a component with useSocket", function() {
 		expect(socket.sentMessages[1]).to.equal('{"bart":"beauvoir"}');
 	});
 
+	it("should not resend spurious queued messages when socket closes and reopens", function() {
+		const { result } = renderHook(() => useSocket("wss://api.example.com/"));
+
+		act(() => {
+			result.current.send({ homer: "simpson" });
+			result.current.send({ bart: "beauvoir" });
+
+			this.ensureSingleSocket().triggerOpen();
+			this.ensureSingleSocket().triggerClose();
+			this.ensureSingleSocket().triggerOpen();
+		});
+
+		const socket = this.ensureSingleSocket();
+		expect(socket.sentMessages).to.have.lengthOf(2);
+		expect(socket.sentMessages[0]).to.equal('{"homer":"simpson"}');
+		expect(socket.sentMessages[1]).to.equal('{"bart":"beauvoir"}');
+	});
+
 	it("should close current socket and open new one when URL changes", function() {
 		const { rerender } = renderHook(({ url }) => useSocket(url), {
 			initialProps: { url: "wss://api.example.com/" }
