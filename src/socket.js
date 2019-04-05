@@ -5,8 +5,10 @@ import useSendHandler from "./send-handler";
 import useSocketInstance from "./socket-instance";
 import useMessageHandler from "./message-handler";
 
+const useMessageQueue = () => useRef([]);
+
 const useSocket = (url, { onMessage } = {}) => {
-	const messageQueue = useRef([]);
+	const messageQueue = useMessageQueue();
 
 	const socket = useSocketInstance(url);
 
