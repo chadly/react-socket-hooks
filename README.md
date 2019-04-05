@@ -1,4 +1,4 @@
-# React Fetch Hooks
+# React Socket Hooks
 
 > A set of react hooks to work real nice with the WebSocket API.
 
