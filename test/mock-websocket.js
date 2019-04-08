@@ -1,4 +1,5 @@
 import Emitter from "eventemitter3";
+import { expect } from "chai";
 
 export default function() {
 	beforeEach(function() {
@@ -49,6 +50,13 @@ export default function() {
 			triggerMessage(message) {
 				this.emit("message", { data: JSON.stringify(message) });
 			}
+		};
+	});
+
+	beforeEach(function() {
+		this.ensureSingleSocket = () => {
+			expect(this.sockets).to.have.lengthOf(1);
+			return this.sockets[0];
 		};
 	});
 

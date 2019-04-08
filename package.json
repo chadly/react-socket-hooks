@@ -50,6 +50,7 @@
     "react-dom": "^16.8.4",
     "react-hooks-testing-library": "^0.4.0",
     "react-test-renderer": "^16.8.4",
+    "react-testing-library": "^6.1.2",
     "rimraf": "^2.6.3"
   },
   "engines": {

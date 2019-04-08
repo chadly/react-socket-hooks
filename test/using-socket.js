@@ -5,17 +5,10 @@ import { renderHook, cleanup, act } from "react-hooks-testing-library";
 
 import { useSocket } from "../src";
 
-describe("When rendering a component with useSocket", function() {
+describe("Using sockets", function() {
 	afterEach(cleanup);
 	behavesLikeBrowser();
 	mockWebSocket();
-
-	beforeEach(function() {
-		this.ensureSingleSocket = () => {
-			expect(this.sockets).to.have.lengthOf(1);
-			return this.sockets[0];
-		};
-	});
 
 	it("should expose a send callback which sends on the socket", function() {
 		const { result } = renderHook(() =>
