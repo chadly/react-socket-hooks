@@ -1,4 +1,5 @@
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
+import useSocketSubscription from "./subscribe";
 
 const useOpenHandler = ({ messageQueue, send, socket }) => {
 	const openHandler = useCallback(() => {
@@ -9,13 +10,7 @@ const useOpenHandler = ({ messageQueue, send, socket }) => {
 		}
 	}, [messageQueue, send]);
 
-	useEffect(() => {
-		if (socket) {
-			socket.addEventListener("open", openHandler);
-		}
-
-		return () => socket && socket.close();
-	}, [openHandler, socket]);
+	useSocketSubscription(socket, "open", openHandler);
 };
 
 export default useOpenHandler;

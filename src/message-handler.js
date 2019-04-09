@@ -1,4 +1,5 @@
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
+import useSocketSubscription from "./subscribe";
 
 const useMessageHandler = ({ socket, onMessage }) => {
 	const messageHandler = useCallback(
@@ -10,17 +11,7 @@ const useMessageHandler = ({ socket, onMessage }) => {
 		[onMessage]
 	);
 
-	useEffect(() => {
-		if (socket) {
-			socket.addEventListener("message", messageHandler);
-		}
-
-		return () => {
-			if (socket) {
-				socket.removeEventListener("message", messageHandler);
-			}
-		};
-	}, [messageHandler, socket]);
+	useSocketSubscription(socket, "message", messageHandler);
 };
 
 export default useMessageHandler;
