@@ -137,4 +137,55 @@ describe("Using scoped sockets", function() {
 			});
 		});
 	});
+
+	describe("when rendering multiple socket hooks from within multiple scopes", function() {
+		beforeEach(function() {
+			const App = () => (
+				<>
+					<SocketScope>
+						<MySocket url={FAKE_URL1} />
+						<MySocket url={FAKE_URL1} />
+						<MySocket url={FAKE_URL1} />
+					</SocketScope>
+					<SocketScope>
+						<MySocket url={FAKE_URL1} />
+						<MySocket url={FAKE_URL2} />
+						<MySocket url={FAKE_URL2} />
+					</SocketScope>
+				</>
+			);
+
+			render(<App />);
+		});
+
+		it("should open multiple socket connections", function() {
+			expect(this.sockets).to.have.lengthOf(3);
+
+			expect(this.sockets[0].url).to.equal(FAKE_URL1);
+			expect(this.sockets[1].url).to.equal(FAKE_URL1);
+			expect(this.sockets[2].url).to.equal(FAKE_URL2);
+		});
+	});
+
+	describe("when rendering multiple socket hooks with no scopes", function() {
+		beforeEach(function() {
+			const App = () => (
+				<>
+					<MySocket url={FAKE_URL1} />
+					<MySocket url={FAKE_URL1} />
+					<MySocket url={FAKE_URL1} />
+				</>
+			);
+
+			render(<App />);
+		});
+
+		it("should open multiple socket connections", function() {
+			expect(this.sockets).to.have.lengthOf(3);
+
+			expect(this.sockets[0].url).to.equal(FAKE_URL1);
+			expect(this.sockets[1].url).to.equal(FAKE_URL1);
+			expect(this.sockets[2].url).to.equal(FAKE_URL1);
+		});
+	});
 });
