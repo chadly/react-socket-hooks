@@ -1,7 +1,7 @@
 import React, {
 	createContext,
 	useState,
-	useMemo,
+	useRef,
 	useCallback,
 	useContext
 } from "react";
@@ -11,50 +11,47 @@ const SocketScopeContext = createContext();
 export const useSocketScope = () => useContext(SocketScopeContext);
 
 export const Provider = ({ children }) => {
-	const [, setSockets] = useState({});
+	const sockets = useRef({});
+	const [, setCounts] = useState({});
 
 	const acquire = useCallback(url => {
-		let s;
+		let socket = sockets.current[url];
 
-		setSockets(sockets => {
-			if (sockets[url]) {
-				s = sockets[url].socket;
-				return {
-					...sockets,
-					[url]: { ...sockets[url], count: sockets[url].count + 1 }
-				};
-			}
+		if (socket) {
+			setCounts(cnts => ({ ...cnts, [url]: cnts[url] + 1 }));
+		} else {
+			socket = new WebSocket(url);
 
-			s = new WebSocket(url);
-			return { ...sockets, [url]: { socket: s, count: 1 } };
-		});
+			socket.release = () => {
+				setCounts(counts => {
+					const count = counts[url];
+					if (!count) return counts;
 
-		return s;
-	}, []);
+					const newCount = count - 1;
 
-	const release = useCallback(url => {
-		setSockets(sockets => {
-			const s = sockets[url];
-			if (!s) return sockets;
+					if (newCount == 0) {
+						sockets.current[url].close();
+						delete sockets.current[url];
 
-			const newCount = s.count - 1;
+						return { ...counts, [url]: null };
+					}
 
-			if (newCount == 0) {
-				s.socket.close();
-				return { ...sockets, [url]: null };
-			}
-
-			return {
-				...sockets,
-				[url]: { ...s, count: newCount }
+					return {
+						...counts,
+						[url]: newCount
+					};
+				});
 			};
-		});
-	}, []);
 
-	const ctxVal = useMemo(() => ({ acquire, release }), [acquire, release]);
+			sockets.current[url] = socket;
+			setCounts(cnts => ({ ...cnts, [url]: 1 }));
+		}
+
+		return socket;
+	}, []);
 
 	return (
-		<SocketScopeContext.Provider value={ctxVal}>
+		<SocketScopeContext.Provider value={acquire}>
 			{children}
 		</SocketScopeContext.Provider>
 	);

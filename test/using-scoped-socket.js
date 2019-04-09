@@ -7,15 +7,15 @@ import React, { useState } from "react";
 
 import { useSocket, SocketScope } from "../src";
 
-const MySocket = ({ url }) => {
-	useSocket(url);
-	return <span>ohhai</span>;
-};
-
 const FAKE_URL1 = "wss://api.example.com/1";
 const FAKE_URL2 = "wss://api.example.com/2";
 
-describe("useSocket with SocketScope", function() {
+const MySocket = ({ url, handler }) => {
+	useSocket(url, { onMessage: handler });
+	return <span>ohhai</span>;
+};
+
+describe("Using scoped sockets", function() {
 	afterEach(cleanup);
 	behavesLikeBrowser();
 	mockWebSocket();
@@ -33,9 +33,24 @@ describe("useSocket with SocketScope", function() {
 
 				return (
 					<SocketScope>
-						<MySocket url={url1} />
-						<MySocket url={url2} />
-						<MySocket url={url3} />
+						<MySocket
+							url={url1}
+							handler={msg => {
+								this.result1 = msg;
+							}}
+						/>
+						<MySocket
+							url={url2}
+							handler={msg => {
+								this.result2 = msg;
+							}}
+						/>
+						<MySocket
+							url={url3}
+							handler={msg => {
+								this.result3 = msg;
+							}}
+						/>
 					</SocketScope>
 				);
 			};
@@ -59,6 +74,20 @@ describe("useSocket with SocketScope", function() {
 			it("should only open one socket connection", function() {
 				const s = this.ensureSingleSocket();
 				expect(s.url).to.equal(FAKE_URL1);
+			});
+
+			describe("and then receiving a socket message", function() {
+				beforeEach(function() {
+					act(() => {
+						this.sockets[0].triggerMessage({ hello: "world" });
+					});
+				});
+
+				it("should run callback handler for all socket hooks", function() {
+					expect(this.result1).to.deep.equal({ hello: "world" });
+					expect(this.result2).to.deep.equal({ hello: "world" });
+					expect(this.result3).to.deep.equal({ hello: "world" });
+				});
 			});
 
 			describe("and then disabling all but one socket hook", function() {

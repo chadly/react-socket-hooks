@@ -3,27 +3,31 @@ import { useSocketScope } from "./scope";
 
 const useSocketInstance = url => {
 	const [socket, setSocket] = useState(null);
-	const scope = useSocketScope();
+	const acquireScopedSocket = useSocketScope();
 
 	useEffect(() => {
 		let s;
+
 		if (url) {
-			if (scope) {
-				s = scope.acquire(url);
+			if (acquireScopedSocket) {
+				s = acquireScopedSocket(url);
 			} else {
 				s = new WebSocket(url);
-				setSocket(s);
 			}
+
+			setSocket(s);
 		}
 
 		return () => {
-			if (scope && url) {
-				scope.release(url);
-			} else if (s) {
-				s.close();
+			if (s) {
+				if (s.release) {
+					s.release(url);
+				} else {
+					s.close();
+				}
 			}
 		};
-	}, [scope, url]);
+	}, [acquireScopedSocket, url]);
 
 	return socket;
 };

@@ -1,2 +1,4 @@
 extends:
   - civicsource/mocha
+rules:
+  react/jsx-no-bind: off
