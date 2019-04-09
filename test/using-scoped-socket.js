@@ -7,6 +7,8 @@ import React, { useState } from "react";
 
 import { useSocket, SocketScope } from "../src";
 
+import waitForSocket from "./wait-for-socket";
+
 const FAKE_URL1 = "wss://api.example.com/1";
 const FAKE_URL2 = "wss://api.example.com/2";
 
@@ -58,6 +60,8 @@ describe("Using scoped sockets", function() {
 			render(<App />);
 		});
 
+		waitForSocket();
+
 		it("should not open any socket connections", function() {
 			expect(this.sockets).to.be.empty;
 		});
@@ -68,6 +72,8 @@ describe("Using scoped sockets", function() {
 					this.setUrl1(FAKE_URL1);
 				});
 			});
+
+			waitForSocket();
 
 			it("should open a connection", function() {
 				const s = this.ensureSingleSocket();
@@ -83,6 +89,8 @@ describe("Using scoped sockets", function() {
 					this.setUrl3(FAKE_URL1);
 				});
 			});
+
+			waitForSocket();
 
 			it("should only open one socket connection", function() {
 				const s = this.ensureSingleSocket();
@@ -112,6 +120,8 @@ describe("Using scoped sockets", function() {
 					});
 				});
 
+				waitForSocket();
+
 				it("should not close socket", function() {
 					const socket = this.ensureSingleSocket();
 					expect(socket.readyState).to.equal(global.WebSocket.CONNECTING);
@@ -126,6 +136,8 @@ describe("Using scoped sockets", function() {
 						this.setUrl3("");
 					});
 				});
+
+				waitForSocket();
 
 				it("should close the socket", function() {
 					const socket = this.ensureSingleSocket();
@@ -142,6 +154,8 @@ describe("Using scoped sockets", function() {
 					this.setUrl3(FAKE_URL2);
 				});
 			});
+
+			waitForSocket();
 
 			it("should open multiple socket connections despite socket scope", function() {
 				expect(this.sockets).to.have.lengthOf(2);
@@ -172,6 +186,8 @@ describe("Using scoped sockets", function() {
 			render(<App />);
 		});
 
+		waitForSocket();
+
 		it("should open multiple socket connections", function() {
 			expect(this.sockets).to.have.lengthOf(3);
 
@@ -193,6 +209,8 @@ describe("Using scoped sockets", function() {
 
 			render(<App />);
 		});
+
+		waitForSocket();
 
 		it("should open multiple socket connections", function() {
 			expect(this.sockets).to.have.lengthOf(3);
