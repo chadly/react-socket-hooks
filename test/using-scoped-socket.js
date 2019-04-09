@@ -62,6 +62,19 @@ describe("Using scoped sockets", function() {
 			expect(this.sockets).to.be.empty;
 		});
 
+		describe("with only one url defined", function() {
+			beforeEach(function() {
+				act(() => {
+					this.setUrl1(FAKE_URL1);
+				});
+			});
+
+			it("should open a connection", function() {
+				const s = this.ensureSingleSocket();
+				expect(s.url).to.equal(FAKE_URL1);
+			});
+		});
+
 		describe("with the same URL", function() {
 			beforeEach(function() {
 				act(() => {
@@ -79,6 +92,7 @@ describe("Using scoped sockets", function() {
 			describe("and then receiving a socket message", function() {
 				beforeEach(function() {
 					act(() => {
+						this.sockets[0].triggerOpen();
 						this.sockets[0].triggerMessage({ hello: "world" });
 					});
 				});
