@@ -7,8 +7,6 @@ import React, { useState } from "react";
 
 import { useSocket, SocketScope } from "../src";
 
-import waitForSocket from "./wait-for-socket";
-
 const FAKE_URL1 = "wss://api.example.com/1";
 const FAKE_URL2 = "wss://api.example.com/2";
 
@@ -58,9 +56,9 @@ describe("Using scoped sockets", function() {
 			};
 
 			render(<App />);
-		});
 
-		waitForSocket();
+			this.clock.tick(1000);
+		});
 
 		it("should not open any socket connections", function() {
 			expect(this.sockets).to.be.empty;
@@ -71,9 +69,9 @@ describe("Using scoped sockets", function() {
 				act(() => {
 					this.setUrl1(FAKE_URL1);
 				});
-			});
 
-			waitForSocket();
+				this.clock.tick(1000);
+			});
 
 			it("should open a connection", function() {
 				const s = this.ensureSingleSocket();
@@ -88,9 +86,9 @@ describe("Using scoped sockets", function() {
 					this.setUrl2(FAKE_URL1);
 					this.setUrl3(FAKE_URL1);
 				});
-			});
 
-			waitForSocket();
+				this.clock.tick(1000);
+			});
 
 			it("should only open one socket connection", function() {
 				const s = this.ensureSingleSocket();
@@ -118,9 +116,9 @@ describe("Using scoped sockets", function() {
 						this.setUrl2("");
 						this.setUrl3("");
 					});
-				});
 
-				waitForSocket();
+					this.clock.tick(1000);
+				});
 
 				it("should not close socket", function() {
 					const socket = this.ensureSingleSocket();
@@ -135,9 +133,9 @@ describe("Using scoped sockets", function() {
 						this.setUrl2("");
 						this.setUrl3("");
 					});
-				});
 
-				waitForSocket();
+					this.clock.tick(1000);
+				});
 
 				it("should close the socket", function() {
 					const socket = this.ensureSingleSocket();
@@ -153,9 +151,9 @@ describe("Using scoped sockets", function() {
 					this.setUrl2(FAKE_URL2);
 					this.setUrl3(FAKE_URL2);
 				});
-			});
 
-			waitForSocket();
+				this.clock.tick(1000);
+			});
 
 			it("should open multiple socket connections despite socket scope", function() {
 				expect(this.sockets).to.have.lengthOf(2);
@@ -184,9 +182,9 @@ describe("Using scoped sockets", function() {
 			);
 
 			render(<App />);
-		});
 
-		waitForSocket();
+			this.clock.tick(1000);
+		});
 
 		it("should open multiple socket connections", function() {
 			expect(this.sockets).to.have.lengthOf(3);
@@ -208,9 +206,9 @@ describe("Using scoped sockets", function() {
 			);
 
 			render(<App />);
-		});
 
-		waitForSocket();
+			this.clock.tick(1000);
+		});
 
 		it("should open multiple socket connections", function() {
 			expect(this.sockets).to.have.lengthOf(3);

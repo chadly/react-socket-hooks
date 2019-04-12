@@ -1,7 +1,17 @@
 import Emitter from "eventemitter3";
 import { expect } from "chai";
 
+import { useFakeTimers } from "sinon";
+
 export default function() {
+	beforeEach(function() {
+		this.clock = useFakeTimers();
+	});
+
+	afterEach(function() {
+		this.clock.restore();
+	});
+
 	beforeEach(function() {
 		let sockets = (this.sockets = []);
 

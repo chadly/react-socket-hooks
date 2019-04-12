@@ -4,7 +4,6 @@ import mockWebSocket from "./mock-websocket";
 import { renderHook, cleanup, act } from "react-hooks-testing-library";
 
 import { useSocket } from "../src";
-import waitForSocket from "./wait-for-socket";
 
 describe("Using sockets", function() {
 	afterEach(cleanup);
@@ -27,9 +26,9 @@ describe("Using sockets", function() {
 		});
 
 		describe("and then sending a message on an open socket", function() {
-			waitForSocket();
-
 			beforeEach(function() {
+				this.clock.tick(1000);
+
 				act(() => {
 					this.ensureSingleSocket().triggerOpen();
 					result.current.send({ bart: "beauvoir" });
@@ -44,9 +43,9 @@ describe("Using sockets", function() {
 		});
 
 		describe("and then sending a message on a not-yet-open socket", function() {
-			waitForSocket();
-
 			beforeEach(function() {
+				this.clock.tick(1000);
+
 				act(() => {
 					result.current.send({ homer: "simpson" });
 					result.current.send({ bart: "beauvoir" });
@@ -93,9 +92,9 @@ describe("Using sockets", function() {
 				act(() => {
 					rerender({ url: "wss://testing.example.com/" });
 				});
-			});
 
-			waitForSocket();
+				this.clock.tick(1000);
+			});
 
 			it("should only open one socket with the new URL", function() {
 				expect(this.ensureSingleSocket().url).to.equal(
@@ -105,15 +104,15 @@ describe("Using sockets", function() {
 		});
 
 		describe("and then changing the url after the socket is initialized", function() {
-			waitForSocket();
-
 			beforeEach(function() {
+				this.clock.tick(1000);
+
 				act(() => {
 					rerender({ url: "wss://testing.example.com/" });
 				});
-			});
 
-			waitForSocket();
+				this.clock.tick(1000);
+			});
 
 			it("should close current socket and open new one", function() {
 				expect(this.sockets).to.have.lengthOf(2);
@@ -163,9 +162,9 @@ describe("Using sockets", function() {
 		});
 
 		describe("and then receiving a message", function() {
-			waitForSocket();
-
 			beforeEach(function() {
+				this.clock.tick(1000);
+
 				act(() => {
 					this.ensureSingleSocket().triggerMessage({ foo: "bar" });
 				});
@@ -180,9 +179,9 @@ describe("Using sockets", function() {
 	describe("when rendering a socket hook with no URL", function() {
 		beforeEach(function() {
 			renderHook(() => useSocket());
-		});
 
-		waitForSocket();
+			this.clock.tick(1000);
+		});
 
 		it("should not initialize any socket", function() {
 			expect(this.sockets).to.be.empty;
