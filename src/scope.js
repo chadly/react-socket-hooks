@@ -14,12 +14,16 @@ export const Provider = ({ children }) => {
 	const sockets = useRef({});
 	const [, setCounts] = useState({});
 
-	const acquire = useCallback(url => {
+	const acquire = useCallback((url, keepAlive) => {
 		let socket = sockets.current[url];
 
-		if (socket) {
-			setCounts(cnts => ({ ...cnts, [url]: cnts[url] + 1 }));
-		} else {
+		if (
+			!socket ||
+			(socket &&
+				keepAlive &&
+				socket.readyState != WebSocket.CONNECTING &&
+				socket.readyState != WebSocket.OPEN)
+		) {
 			socket = new WebSocket(url);
 
 			socket.release = () => {
@@ -44,8 +48,9 @@ export const Provider = ({ children }) => {
 			};
 
 			sockets.current[url] = socket;
-			setCounts(cnts => ({ ...cnts, [url]: 1 }));
 		}
+
+		setCounts(cnts => ({ ...cnts, [url]: (cnts[url] || 0) + 1 }));
 
 		return socket;
 	}, []);

@@ -1,18 +1,28 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 import useOpenHandler from "./open-handler";
 import useSendHandler from "./send-handler";
 import useSocketInstance from "./socket-instance";
 import useMessageHandler from "./message-handler";
 import useSocketReadyState from "./ready-state";
+import useSocketKeepAlive from "./keep-alive";
 
 const useMessageQueue = () => useRef([]);
 
-const useSocket = (url, { onMessage } = {}) => {
+const useSocket = (url, { onMessage, keepAlive } = {}) => {
+	const [keepAliveAttempts, setKeepAliveAttempts] = useState(0);
+
 	const messageQueue = useMessageQueue();
 
-	const socket = useSocketInstance(url);
+	const socket = useSocketInstance(url, keepAlive, keepAliveAttempts);
 	const readyState = useSocketReadyState(socket);
+
+	useSocketKeepAlive({
+		socket,
+		keepAlive,
+		keepAliveAttempts,
+		setKeepAliveAttempts
+	});
 
 	const send = useSendHandler({ socket, messageQueue });
 	useOpenHandler({ messageQueue, send, socket });
@@ -20,6 +30,7 @@ const useSocket = (url, { onMessage } = {}) => {
 
 	return {
 		readyState,
+		keepAliveAttempts,
 		send
 	};
 };

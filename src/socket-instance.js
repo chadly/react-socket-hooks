@@ -3,7 +3,7 @@ import { useSocketScope } from "./scope";
 
 export const DELAY = 100;
 
-const useSocketInstance = url => {
+const useSocketInstance = (url, keepAlive, keepAliveSignal) => {
 	const [socket, setSocket] = useState(null);
 	const acquireScopedSocket = useSocketScope();
 
@@ -13,7 +13,7 @@ const useSocketInstance = url => {
 		if (url) {
 			t = setTimeout(() => {
 				if (acquireScopedSocket) {
-					s = acquireScopedSocket(url);
+					s = acquireScopedSocket(url, keepAlive);
 				} else {
 					s = new WebSocket(url);
 				}
@@ -36,7 +36,7 @@ const useSocketInstance = url => {
 				}
 			}
 		};
-	}, [acquireScopedSocket, url]);
+	}, [acquireScopedSocket, keepAlive, keepAliveSignal, url]);
 
 	return socket;
 };
