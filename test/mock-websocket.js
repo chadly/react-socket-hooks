@@ -54,7 +54,7 @@ export default function() {
 
 			triggerClose() {
 				this.readyState = WebSocket.CLOSED;
-				this.emit("closed");
+				this.emit("close");
 			}
 
 			triggerMessage(message) {

@@ -25,35 +25,17 @@ describe("Using sockets", function() {
 			expect(result.current.send).to.be.a("function");
 		});
 
-		describe("and then sending a message on an open socket", function() {
-			beforeEach(function() {
-				this.clock.tick(1000);
-
-				act(() => {
-					this.ensureSingleSocket().triggerOpen();
-					result.current.send({ bart: "beauvoir" });
-				});
-			});
-
-			it("should send the message on the socket", function() {
-				expect(this.ensureSingleSocket().sentMessages[0]).to.equal(
-					'{"bart":"beauvoir"}'
-				);
-			});
+		it("should not yet return websocket ready state", function() {
+			expect(result.current.readyState).to.be.undefined;
 		});
 
-		describe("and then sending a message on a not-yet-open socket", function() {
+		describe("and then waiting for the socket to be initialized", function() {
 			beforeEach(function() {
 				this.clock.tick(1000);
-
-				act(() => {
-					result.current.send({ homer: "simpson" });
-					result.current.send({ bart: "beauvoir" });
-				});
 			});
 
-			it("should not send messages on the socket", function() {
-				expect(this.ensureSingleSocket().sentMessages).to.be.empty;
+			it("should return websocket ready state", function() {
+				expect(result.current.readyState).to.equal(global.WebSocket.CONNECTING);
 			});
 
 			describe("and then opening the socket", function() {
@@ -63,25 +45,83 @@ describe("Using sockets", function() {
 					});
 				});
 
-				it("should send queued messages on the socket", function() {
-					const socket = this.ensureSingleSocket();
-					expect(socket.sentMessages).to.have.lengthOf(2);
-					expect(socket.sentMessages[0]).to.equal('{"homer":"simpson"}');
-					expect(socket.sentMessages[1]).to.equal('{"bart":"beauvoir"}');
+				it("should return websocket state as open", function() {
+					expect(result.current.readyState).to.equal(global.WebSocket.OPEN);
 				});
 
-				describe("and then closing & reopening the socket", function() {
+				describe("and then sending a message", function() {
 					beforeEach(function() {
-						this.ensureSingleSocket().sentMessages = [];
-
 						act(() => {
-							this.ensureSingleSocket().triggerClose();
+							result.current.send({ bart: "beauvoir" });
+						});
+					});
+
+					it("should send the message on the socket", function() {
+						expect(this.ensureSingleSocket().sentMessages[0]).to.equal(
+							'{"bart":"beauvoir"}'
+						);
+					});
+				});
+			});
+
+			describe("and then sending a message on a not-yet-open socket", function() {
+				beforeEach(function() {
+					act(() => {
+						result.current.send({ homer: "simpson" });
+						result.current.send({ bart: "beauvoir" });
+					});
+				});
+
+				it("should not send messages on the socket", function() {
+					expect(this.ensureSingleSocket().sentMessages).to.be.empty;
+				});
+
+				describe("and then opening the socket", function() {
+					beforeEach(function() {
+						act(() => {
 							this.ensureSingleSocket().triggerOpen();
 						});
 					});
 
-					it("should not send duplicate messages on the socket", function() {
-						expect(this.ensureSingleSocket().sentMessages).to.be.empty;
+					it("should send queued messages on the socket", function() {
+						const socket = this.ensureSingleSocket();
+						expect(socket.sentMessages).to.have.lengthOf(2);
+						expect(socket.sentMessages[0]).to.equal('{"homer":"simpson"}');
+						expect(socket.sentMessages[1]).to.equal('{"bart":"beauvoir"}');
+					});
+
+					describe("and then closing the socket", function() {
+						beforeEach(function() {
+							this.ensureSingleSocket().sentMessages = [];
+
+							act(() => {
+								this.ensureSingleSocket().triggerClose();
+							});
+						});
+
+						it("should return websocket ready state as closed", function() {
+							expect(result.current.readyState).to.equal(
+								global.WebSocket.CLOSED
+							);
+						});
+
+						describe("and then reopening the socket", function() {
+							beforeEach(function() {
+								act(() => {
+									this.ensureSingleSocket().triggerOpen();
+								});
+							});
+
+							it("should return websocket ready state as opened", function() {
+								expect(result.current.readyState).to.equal(
+									global.WebSocket.OPEN
+								);
+							});
+
+							it("should not send duplicate messages on the socket", function() {
+								expect(this.ensureSingleSocket().sentMessages).to.be.empty;
+							});
+						});
 					});
 				});
 			});
