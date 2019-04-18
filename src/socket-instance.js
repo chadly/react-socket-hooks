@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { useSocketScope } from "./scope";
+import { useAcquireSocket, useReleaseSocket } from "./scope";
 
 export const DELAY = 100;
 
 const useSocketInstance = (url, keepAlive, keepAliveSignal) => {
 	const [socket, setSocket] = useState(null);
-	const acquireScopedSocket = useSocketScope();
+	const acquireScopedSocket = useAcquireSocket();
+	const releaseScopedSocket = useReleaseSocket();
 
 	useEffect(() => {
 		let s, t;
@@ -29,14 +30,20 @@ const useSocketInstance = (url, keepAlive, keepAliveSignal) => {
 			}
 
 			if (s) {
-				if (s.release) {
-					s.release(url);
+				if (releaseScopedSocket) {
+					releaseScopedSocket(url);
 				} else {
 					s.close();
 				}
 			}
 		};
-	}, [acquireScopedSocket, keepAlive, keepAliveSignal, url]);
+	}, [
+		url,
+		acquireScopedSocket,
+		releaseScopedSocket,
+		keepAlive,
+		keepAliveSignal
+	]);
 
 	return socket;
 };

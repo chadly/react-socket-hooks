@@ -8,7 +8,15 @@ import React, {
 
 const SocketScopeContext = createContext();
 
-export const useSocketScope = () => useContext(SocketScopeContext);
+export const useAcquireSocket = () => {
+	const { acquire } = useContext(SocketScopeContext) || {};
+	return acquire;
+};
+
+export const useReleaseSocket = () => {
+	const { release } = useContext(SocketScopeContext) || {};
+	return release;
+};
 
 export const Provider = ({ children }) => {
 	const sockets = useRef({});
@@ -25,28 +33,6 @@ export const Provider = ({ children }) => {
 				socket.readyState != WebSocket.OPEN)
 		) {
 			socket = new WebSocket(url);
-
-			socket.release = () => {
-				setCounts(counts => {
-					const count = counts[url];
-					if (!count) return counts;
-
-					const newCount = count - 1;
-
-					if (newCount == 0) {
-						sockets.current[url].close();
-						delete sockets.current[url];
-
-						return { ...counts, [url]: null };
-					}
-
-					return {
-						...counts,
-						[url]: newCount
-					};
-				});
-			};
-
 			sockets.current[url] = socket;
 		}
 
@@ -55,8 +41,29 @@ export const Provider = ({ children }) => {
 		return socket;
 	}, []);
 
+	const release = useCallback(url => {
+		setCounts(counts => {
+			const count = counts[url];
+			if (!count) return counts;
+
+			const newCount = count - 1;
+
+			if (newCount == 0) {
+				sockets.current[url].close();
+				delete sockets.current[url];
+
+				return { ...counts, [url]: null };
+			}
+
+			return {
+				...counts,
+				[url]: newCount
+			};
+		});
+	}, []);
+
 	return (
-		<SocketScopeContext.Provider value={acquire}>
+		<SocketScopeContext.Provider value={{ acquire, release }}>
 			{children}
 		</SocketScopeContext.Provider>
 	);
