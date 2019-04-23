@@ -9,7 +9,10 @@ import useSocketKeepAlive from "./keep-alive";
 
 const useMessageQueue = () => useRef([]);
 
-const useSocket = (url, { onMessage, keepAlive } = {}) => {
+const useSocket = (
+	url,
+	{ onMessage, keepAlive, keepAliveMaxDelay = 15000 } = {}
+) => {
 	const [keepAliveAttempts, setKeepAliveAttempts] = useState(0);
 
 	const messageQueue = useMessageQueue();
@@ -20,6 +23,7 @@ const useSocket = (url, { onMessage, keepAlive } = {}) => {
 	useSocketKeepAlive({
 		socket,
 		keepAlive,
+		keepAliveMaxDelay,
 		keepAliveAttempts,
 		setKeepAliveAttempts
 	});
