@@ -10,8 +10,7 @@ const useSocketKeepAlive = ({
 	const timer = useRef(null);
 
 	const handler = useCallback(() => {
-		// https://favsub.com/bookmarks/edit/17993-john-ryding-blog-how-to-reconnect-web-sockets-in-a-realtime-web-app-without-flooding-the-server
-		var time = generateInterval(attempts, keepAliveMaxDelay);
+		const time = generateBackOffDelay(attempts, keepAliveMaxDelay);
 
 		timer.current = setTimeout(() => {
 			setAttempts(c => c + 1);
@@ -37,15 +36,25 @@ const useSocketKeepAlive = ({
 	}, [handler, keepAlive, socket]);
 };
 
-function generateInterval(k, keepAliveMaxDelay) {
-	var maxInterval = (Math.pow(2, k) - 1) * 1000;
+function generateBackOffDelay(k, max) {
+	let backoff = Math.pow(2, k) * 1000;
+	const jitter = Math.random() * 2000;
 
-	if (maxInterval > keepAliveMaxDelay) {
-		maxInterval = keepAliveMaxDelay; // If the generated interval is more than the max delay, truncate it down to the max delay.
+	if (k % 2 === 0) {
+		backoff += jitter;
+	} else {
+		backoff -= jitter;
 	}
 
-	// generate the interval to a random number between 0 and the maxInterval determined from above
-	return Math.random() * maxInterval;
+	if (backoff > max) {
+		backoff = max - jitter;
+	}
+
+	if (backoff < 0) {
+		backoff = 0;
+	}
+
+	return Math.floor(backoff);
 }
 
 export default useSocketKeepAlive;
