@@ -1,26 +1,32 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 
+const ACQUIRE_DELAY = 100;
+const CLEANUP_DELAY = 150;
+
 const useSocketRegistry = () => {
 	const sockets = useRef({});
 	const [counts, setCounts] = useState({});
 
-	const acquire = useCallback((url, keepAlive) => {
-		let socket = sockets.current[url];
+	const acquire = useCallback((url, keepAlive, cb) => {
+		const t = setTimeout(() => {
+			let socket = sockets.current[url];
 
-		if (
-			!socket ||
-			(socket &&
-				keepAlive &&
-				socket.readyState != WebSocket.CONNECTING &&
-				socket.readyState != WebSocket.OPEN)
-		) {
-			socket = new WebSocket(url);
-			sockets.current[url] = socket;
-		}
+			if (
+				!socket ||
+				(socket &&
+					keepAlive &&
+					socket.readyState != WebSocket.CONNECTING &&
+					socket.readyState != WebSocket.OPEN)
+			) {
+				socket = new WebSocket(url);
+				sockets.current[url] = socket;
+			}
 
-		setCounts(cnts => ({ ...cnts, [url]: (cnts[url] || 0) + 1 }));
+			setCounts(cnts => ({ ...cnts, [url]: (cnts[url] || 0) + 1 }));
+			cb(socket);
+		}, ACQUIRE_DELAY);
 
-		return socket;
+		return () => clearTimeout(t);
 	}, []);
 
 	const release = useCallback(url => {
@@ -39,12 +45,16 @@ const useSocketRegistry = () => {
 
 	useEffect(() => {
 		// cleanup zero-ref sockets
-		for (let url in counts) {
-			if (counts[url] == 0 && sockets.current[url]) {
-				sockets.current[url].close();
-				delete sockets.current[url];
+		const t = setTimeout(() => {
+			for (let url in counts) {
+				if (counts[url] == 0 && sockets.current[url]) {
+					sockets.current[url].close();
+					delete sockets.current[url];
+				}
 			}
-		}
+		}, CLEANUP_DELAY);
+
+		return () => clearTimeout(t);
 	}, [counts]);
 
 	return { acquire, release };

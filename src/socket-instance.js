@@ -2,8 +2,6 @@ import { useEffect, useState } from "react";
 import { useAcquireSocket, useReleaseSocket } from "./scope";
 import useSocketRegistry from "./registry";
 
-export const DELAY = 100;
-
 const useSocketAcquisition = () => {
 	const { acquire, release } = useSocketRegistry();
 	const acquireScoped = useAcquireSocket();
@@ -20,23 +18,23 @@ const useSocketInstance = (url, keepAlive, keepAliveSignal) => {
 	const { acquire, release } = useSocketAcquisition();
 
 	useEffect(() => {
-		let s, t;
+		let sock, cancelAcquire;
 
 		if (url) {
-			t = setTimeout(() => {
-				s = acquire(url, keepAlive);
+			cancelAcquire = acquire(url, keepAlive, s => {
+				sock = s;
 				setSocket(s);
-				t = null;
-			}, DELAY);
+				cancelAcquire = null;
+			});
 		}
 
 		return () => {
-			if (t) {
-				clearTimeout(t);
+			if (cancelAcquire) {
+				cancelAcquire();
 			}
 
-			if (s) {
-				release(s.url);
+			if (sock) {
+				release(sock.url);
 			}
 		};
 	}, [url, keepAlive, keepAliveSignal, acquire, release]);
