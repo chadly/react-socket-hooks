@@ -1,8 +1,8 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 
 const useSocketRegistry = () => {
 	const sockets = useRef({});
-	const [, setCounts] = useState({});
+	const [counts, setCounts] = useState({});
 
 	const acquire = useCallback((url, keepAlive) => {
 		let socket = sockets.current[url];
@@ -30,19 +30,22 @@ const useSocketRegistry = () => {
 
 			const newCount = count - 1;
 
-			if (newCount == 0) {
-				sockets.current[url].close();
-				delete sockets.current[url];
-
-				return { ...counts, [url]: null };
-			}
-
 			return {
 				...counts,
 				[url]: newCount
 			};
 		});
 	}, []);
+
+	useEffect(() => {
+		// cleanup zero-ref sockets
+		for (let url in counts) {
+			if (counts[url] == 0 && sockets.current[url]) {
+				sockets.current[url].close();
+				delete sockets.current[url];
+			}
+		}
+	}, [counts]);
 
 	return { acquire, release };
 };
