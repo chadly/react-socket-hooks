@@ -1,24 +1,30 @@
 import { useEffect, useState } from "react";
 import { useAcquireSocket, useReleaseSocket } from "./scope";
+import useSocketRegistry from "./registry";
 
 export const DELAY = 100;
 
+const useSocketAcquisition = () => {
+	const { acquire, release } = useSocketRegistry();
+	const acquireScoped = useAcquireSocket();
+	const releaseScoped = useReleaseSocket();
+
+	return {
+		acquire: acquireScoped || acquire,
+		release: releaseScoped || release
+	};
+};
+
 const useSocketInstance = (url, keepAlive, keepAliveSignal) => {
 	const [socket, setSocket] = useState(null);
-	const acquireScopedSocket = useAcquireSocket();
-	const releaseScopedSocket = useReleaseSocket();
+	const { acquire, release } = useSocketAcquisition();
 
 	useEffect(() => {
 		let s, t;
 
 		if (url) {
 			t = setTimeout(() => {
-				if (acquireScopedSocket) {
-					s = acquireScopedSocket(url, keepAlive);
-				} else {
-					s = new WebSocket(url);
-				}
-
+				s = acquire(url, keepAlive);
 				setSocket(s);
 				t = null;
 			}, DELAY);
@@ -30,20 +36,10 @@ const useSocketInstance = (url, keepAlive, keepAliveSignal) => {
 			}
 
 			if (s) {
-				if (releaseScopedSocket) {
-					releaseScopedSocket(url);
-				} else {
-					s.close();
-				}
+				release(s.url);
 			}
 		};
-	}, [
-		url,
-		acquireScopedSocket,
-		releaseScopedSocket,
-		keepAlive,
-		keepAliveSignal
-	]);
+	}, [url, keepAlive, keepAliveSignal, acquire, release]);
 
 	return socket;
 };

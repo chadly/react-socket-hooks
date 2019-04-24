@@ -1,10 +1,5 @@
-import React, {
-	createContext,
-	useState,
-	useRef,
-	useCallback,
-	useContext
-} from "react";
+import React, { createContext, useContext } from "react";
+import useSocketRegistry from "./registry";
 
 const SocketScopeContext = createContext();
 
@@ -19,51 +14,10 @@ export const useReleaseSocket = () => {
 };
 
 export const Provider = ({ children }) => {
-	const sockets = useRef({});
-	const [, setCounts] = useState({});
-
-	const acquire = useCallback((url, keepAlive) => {
-		let socket = sockets.current[url];
-
-		if (
-			!socket ||
-			(socket &&
-				keepAlive &&
-				socket.readyState != WebSocket.CONNECTING &&
-				socket.readyState != WebSocket.OPEN)
-		) {
-			socket = new WebSocket(url);
-			sockets.current[url] = socket;
-		}
-
-		setCounts(cnts => ({ ...cnts, [url]: (cnts[url] || 0) + 1 }));
-
-		return socket;
-	}, []);
-
-	const release = useCallback(url => {
-		setCounts(counts => {
-			const count = counts[url];
-			if (!count) return counts;
-
-			const newCount = count - 1;
-
-			if (newCount == 0) {
-				sockets.current[url].close();
-				delete sockets.current[url];
-
-				return { ...counts, [url]: null };
-			}
-
-			return {
-				...counts,
-				[url]: newCount
-			};
-		});
-	}, []);
+	const ctx = useSocketRegistry();
 
 	return (
-		<SocketScopeContext.Provider value={{ acquire, release }}>
+		<SocketScopeContext.Provider value={ctx}>
 			{children}
 		</SocketScopeContext.Provider>
 	);
