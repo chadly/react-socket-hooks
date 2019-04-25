@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { expect } from "chai";
 import behavesLikeBrowser from "./behaves-like-browser";
 import mockWebSocket from "./mock-websocket";
+import mockTimers from "./mock-timers";
 import { renderHook, cleanup, act } from "react-hooks-testing-library";
 import { render } from "react-testing-library";
 
@@ -18,6 +19,7 @@ describe("Using sockets with keep-alive option", function() {
 	afterEach(cleanup);
 	behavesLikeBrowser();
 	mockWebSocket();
+	mockTimers();
 
 	describe("when rendering a socket hook with keep-alive option", function() {
 		let result;
