@@ -10,7 +10,7 @@ const useSocketRegistry = (delay = 100) => {
 				let socket = sockets.current[url];
 
 				if (
-					!socket ||
+					(global.WebSocket && !socket) ||
 					(socket &&
 						keepAlive &&
 						socket.readyState != WebSocket.CONNECTING &&

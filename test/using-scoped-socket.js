@@ -1,6 +1,7 @@
 import { expect } from "chai";
 import behavesLikeBrowser from "./behaves-like-browser";
 import mockWebSocket from "./mock-websocket";
+import mockTimers from "./mock-timers";
 import { render, cleanup, act } from "react-testing-library";
 
 import React, { useState } from "react";
@@ -19,6 +20,7 @@ describe("Using scoped sockets", function() {
 	afterEach(cleanup);
 	behavesLikeBrowser();
 	mockWebSocket();
+	mockTimers();
 
 	describe("when rendering multiple socket hooks within one scope", function() {
 		beforeEach(function() {
