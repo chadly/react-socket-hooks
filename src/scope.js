@@ -13,8 +13,8 @@ export const useReleaseSocket = () => {
 	return release;
 };
 
-export const Provider = ({ children }) => {
-	const ctx = useSocketRegistry();
+export const Provider = ({ socketDelay, children }) => {
+	const ctx = useSocketRegistry(socketDelay);
 
 	return (
 		<SocketScopeContext.Provider value={ctx}>

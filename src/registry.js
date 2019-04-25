@@ -1,33 +1,33 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 
-const ACQUIRE_DELAY = 100;
-const CLEANUP_DELAY = 150;
-
-const useSocketRegistry = () => {
+const useSocketRegistry = (delay = 100) => {
 	const sockets = useRef({});
 	const [counts, setCounts] = useState({});
 
-	const acquire = useCallback((url, keepAlive, cb) => {
-		const t = setTimeout(() => {
-			let socket = sockets.current[url];
+	const acquire = useCallback(
+		(url, keepAlive, cb) => {
+			const t = setTimeout(() => {
+				let socket = sockets.current[url];
 
-			if (
-				!socket ||
-				(socket &&
-					keepAlive &&
-					socket.readyState != WebSocket.CONNECTING &&
-					socket.readyState != WebSocket.OPEN)
-			) {
-				socket = new WebSocket(url);
-				sockets.current[url] = socket;
-			}
+				if (
+					!socket ||
+					(socket &&
+						keepAlive &&
+						socket.readyState != WebSocket.CONNECTING &&
+						socket.readyState != WebSocket.OPEN)
+				) {
+					socket = new WebSocket(url);
+					sockets.current[url] = socket;
+				}
 
-			setCounts(cnts => ({ ...cnts, [url]: (cnts[url] || 0) + 1 }));
-			cb(socket);
-		}, ACQUIRE_DELAY);
+				setCounts(cnts => ({ ...cnts, [url]: (cnts[url] || 0) + 1 }));
+				cb(socket);
+			}, delay);
 
-		return () => clearTimeout(t);
-	}, []);
+			return () => clearTimeout(t);
+		},
+		[delay]
+	);
 
 	const release = useCallback(url => {
 		setCounts(counts => {
@@ -52,10 +52,10 @@ const useSocketRegistry = () => {
 					delete sockets.current[url];
 				}
 			}
-		}, CLEANUP_DELAY);
+		}, delay + 50);
 
 		return () => clearTimeout(t);
-	}, [counts]);
+	}, [counts, delay]);
 
 	return { acquire, release };
 };

@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { useAcquireSocket, useReleaseSocket } from "./scope";
 import useSocketRegistry from "./registry";
 
-const useSocketAcquisition = () => {
-	const { acquire, release } = useSocketRegistry();
+const useSocketAcquisition = socketDelay => {
+	const { acquire, release } = useSocketRegistry(socketDelay);
 	const acquireScoped = useAcquireSocket();
 	const releaseScoped = useReleaseSocket();
 
@@ -13,9 +13,9 @@ const useSocketAcquisition = () => {
 	};
 };
 
-const useSocketInstance = (url, keepAlive, keepAliveSignal) => {
+const useSocketInstance = (url, keepAlive, keepAliveSignal, socketDelay) => {
 	const [socket, setSocket] = useState(null);
-	const { acquire, release } = useSocketAcquisition();
+	const { acquire, release } = useSocketAcquisition(socketDelay);
 
 	useEffect(() => {
 		let sock, cancelAcquire;

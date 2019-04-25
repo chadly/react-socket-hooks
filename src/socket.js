@@ -11,13 +11,18 @@ const useMessageQueue = () => useRef([]);
 
 const useSocket = (
 	url,
-	{ onMessage, keepAlive, keepAliveMaxDelay = 15000 } = {}
+	{ onMessage, keepAlive, keepAliveMaxDelay = 15000, socketDelay } = {}
 ) => {
 	const [keepAliveAttempts, setKeepAliveAttempts] = useState(0);
 
 	const messageQueue = useMessageQueue();
 
-	const socket = useSocketInstance(url, keepAlive, keepAliveAttempts);
+	const socket = useSocketInstance(
+		url,
+		keepAlive,
+		keepAliveAttempts,
+		socketDelay
+	);
 	const readyState = useSocketReadyState(socket);
 
 	useSocketKeepAlive({
