@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { renderHook, cleanup } from "react-hooks-testing-library";
 import behavesLikeBrowser from "./behaves-like-browser";
 import mockTimers from "./mock-timers";
-import { useSocket } from "../src";
+import useSocket from "../src";
 
 describe("Using socket hook in server-side rendering", function() {
 	afterEach(cleanup);

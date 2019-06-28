@@ -4,7 +4,7 @@ import mockWebSocket from "./mock-websocket";
 import mockTimers from "./mock-timers";
 import { renderHook, cleanup, act } from "react-hooks-testing-library";
 
-import { useSocket } from "../src";
+import useSocket from "../src";
 
 describe("Using sockets", function() {
 	afterEach(cleanup);
