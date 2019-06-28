@@ -1,6 +1,6 @@
 {
   "name": "react-socket-hooks",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "description": "A set of react hooks to work real nice with the WebSocket API",
   "keywords": [
     "react",
