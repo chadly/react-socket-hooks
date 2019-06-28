@@ -10,8 +10,8 @@ import { useSocket, SocketScope } from "../src";
 
 const KEEP_ALIVE_WAIT_TIME = 20000;
 
-const MySocket = ({ keepAlive = true }) => {
-	useSocket("wss://api.example.com/", { keepAlive });
+const MySocket = ({ keepAlive = true, onMessage }) => {
+	useSocket("wss://api.example.com/", { keepAlive, onMessage });
 	return <span>ohhai</span>;
 };
 
@@ -22,11 +22,18 @@ describe("Using sockets with keep-alive option", function() {
 	mockTimers();
 
 	describe("when rendering a socket hook with keep-alive option", function() {
-		let result;
+		let result, socketSink;
 
 		beforeEach(function() {
+			socketSink = null;
+
 			const r = renderHook(() =>
-				useSocket("wss://api.example.com/", { keepAlive: true })
+				useSocket("wss://api.example.com/", {
+					keepAlive: true,
+					onMessage: message => {
+						socketSink = message;
+					}
+				})
 			);
 			result = r.result;
 
@@ -116,6 +123,18 @@ describe("Using sockets with keep-alive option", function() {
 							expect(this.sockets).to.have.lengthOf(2);
 						});
 					});
+
+					describe("and then receiving a socket message", function() {
+						beforeEach(function() {
+							act(() => {
+								this.sockets[1].triggerMessage({ foo: "bar" });
+							});
+						});
+
+						it("should call `onMessage` handler", function() {
+							expect(socketSink).to.deep.equal({ foo: "bar" });
+						});
+					});
 				});
 			});
 		});
@@ -168,7 +187,13 @@ describe("Using sockets with keep-alive option", function() {
 	});
 
 	describe("when rendering multiple socket hooks with keep-alive option within one scope", function() {
+		let socketSink1, socketSink2, socketSink3;
+
 		beforeEach(function() {
+			socketSink1 = null;
+			socketSink2 = null;
+			socketSink3 = null;
+
 			const App = () => {
 				const [doIt, setDoIt] = useState(true);
 
@@ -178,9 +203,21 @@ describe("Using sockets with keep-alive option", function() {
 					<SocketScope>
 						{doIt ? (
 							<>
-								<MySocket />
-								<MySocket />
-								<MySocket />
+								<MySocket
+									onMessage={msg => {
+										socketSink1 = msg;
+									}}
+								/>
+								<MySocket
+									onMessage={msg => {
+										socketSink2 = msg;
+									}}
+								/>
+								<MySocket
+									onMessage={msg => {
+										socketSink3 = msg;
+									}}
+								/>
 							</>
 						) : null}
 					</SocketScope>
@@ -221,6 +258,22 @@ describe("Using sockets with keep-alive option", function() {
 					expect(this.sockets[1].readyState).to.equal(
 						global.WebSocket.CONNECTING
 					);
+				});
+
+				describe("and then reconnecting to the socket and receiving a message", function() {
+					beforeEach(function() {
+						this.sockets[1].triggerOpen();
+
+						act(() => {
+							this.sockets[1].triggerMessage({ foo: "bar" });
+						});
+					});
+
+					it("should call `onMessage` handler for each socket component", function() {
+						expect(socketSink1).to.deep.equal({ foo: "bar" });
+						expect(socketSink2).to.deep.equal({ foo: "bar" });
+						expect(socketSink3).to.deep.equal({ foo: "bar" });
+					});
 				});
 
 				describe("and then derendering all socket hooks", function() {
