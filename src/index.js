@@ -38,7 +38,6 @@ const useSocket = (
 	useMessageHandler({ socket, onMessage });
 
 	return {
-		socket,
 		readyState,
 		keepAliveAttempts,
 		send
