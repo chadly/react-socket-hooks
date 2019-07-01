@@ -8,6 +8,7 @@ const useSendHandler = ({ socket, messageQueue }) =>
 					"Attempt to send WebSocket message in unsupported environment."
 				);
 			}
+
 			if (socket && socket.readyState === WebSocket.OPEN) {
 				socket.send(JSON.stringify(message));
 			} else {

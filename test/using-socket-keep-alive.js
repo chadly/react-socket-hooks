@@ -20,14 +20,20 @@ describe("Using sockets with keep-alive option", function() {
 		beforeEach(function() {
 			socketSink = null;
 
-			const r = renderHook(() =>
-				useSocket("wss://api.example.com/", {
-					keepAlive: true,
-					onMessage: message => {
-						socketSink = message;
+			const r = renderHook(() => {
+				const { useMessageHandler, ...result } = useSocket(
+					"wss://api.example.com/",
+					{
+						keepAlive: true
 					}
-				})
-			);
+				);
+
+				useMessageHandler(message => {
+					socketSink = message;
+				});
+
+				return result;
+			});
 			result = r.result;
 
 			this.clock.tick(1000);

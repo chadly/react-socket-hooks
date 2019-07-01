@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 import useSocketSubscription from "./subscribe";
 
-const useMessageHandler = ({ socket, onMessage }) => {
+const useMessageHandler = (socket, onMessage) => {
 	const messageHandler = useCallback(
 		evt => {
 			if (evt && evt.data && onMessage) {

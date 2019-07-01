@@ -228,13 +228,17 @@ describe("Using sockets", function() {
 		let socketSink;
 
 		beforeEach(function() {
-			renderHook(() =>
-				useSocket("wss://api.example.com/", {
-					onMessage: message => {
-						socketSink = message;
-					}
-				})
-			);
+			renderHook(() => {
+				const { useMessageHandler, ...result } = useSocket(
+					"wss://api.example.com/"
+				);
+
+				useMessageHandler(message => {
+					socketSink = message;
+				});
+
+				return result;
+			});
 		});
 
 		describe("and then receiving a message", function() {

@@ -3,9 +3,15 @@
 > A set of react hooks to work real nice with the WebSocket API.
 
 ```js
-const mySocketMessageHandler = msg => console.log(msg);
+import { useCallback } from "react";
+import useSocket from "react-socket-hooks";
 
-const { send } = useSocket("wss://example.com", { onMessage: mySocketMessageHandler });
+const mySocketMessageHandler1 = useCallback(msg => console.log(msg), []);
+const mySocketMessageHandler2 = useCallback(msg => console.log("ohmy", msg), []);
+
+const { useMessageHandler, send } = useSocket("wss://example.com");
+useMessageHandler(mySocketMessageHandler1);
+useMessageHandler(mySocketMessageHandler2);
 
 // …later, perhaps in response to a user action
 send("hello, server");

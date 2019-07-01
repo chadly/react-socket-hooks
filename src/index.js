@@ -11,7 +11,7 @@ const useMessageQueue = () => useRef([]);
 
 const useSocket = (
 	url,
-	{ onMessage, keepAlive, keepAliveMaxDelay = 15000, socketDelay } = {}
+	{ keepAlive, keepAliveMaxDelay = 15000, socketDelay } = {}
 ) => {
 	const [keepAliveAttempts, setKeepAliveAttempts] = useState(0);
 
@@ -35,9 +35,9 @@ const useSocket = (
 
 	const send = useSendHandler({ socket, messageQueue });
 	useOpenHandler({ messageQueue, send, socket });
-	useMessageHandler({ socket, onMessage });
 
 	return {
+		useMessageHandler: onMessage => useMessageHandler(socket, onMessage),
 		readyState,
 		keepAliveAttempts,
 		send
